@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>MAKOHAKR</title>
+<style>
+* { box-sizing: border-box; margin:0; padding:0; }
+body {
+  background: #000;
+  font-family: Arial, Tahoma;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ثيمات */
+body.theme1 { background: linear-gradient(#050b2e, #000); }
+body.theme2 { background: linear-gradient(#1a1a1a, #111); }
+body.theme3 { background: linear-gradient(#0b1d3a, #020824); }
+
+.app {
+  width: 360px;
+  height: 640px;
+  background: linear-gradient(#050b2e, #000);
+  border-radius: 25px;
+  padding: 15px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 0 35px #00f;
+  position: relative;
+  overflow: hidden;
+}
+
+/* العنوان */
+.title {
+  font-size: 18px;
+  color: #00eaff;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+/* النجوم */
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  opacity: 0.8;
+  animation: starMove linear infinite;
+}
+@keyframes starMove { from { top: -10px; } to { top: 700px; } }
+
+/* الطيارات */
+.plane {
+  width: 60px;
+  height: 80px;
+  margin: 15px auto;
+  background: linear-gradient(red, darkred);
+  clip-path: polygon(
+    50% 0%, 90% 30%, 70% 30%, 70% 100%, 30% 100%, 30% 30%, 10% 30%
+  );
+  position: relative;
+  animation: float 1s infinite alternate;
+}
+@keyframes float { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+
+/* محرك الطيارة */
+.fire {
+  position: absolute;
+  bottom: -18px;
+  left: 22px;
+  width: 16px;
+  height: 22px;
+  background: radial-gradient(yellow, orange, red);
+  border-radius: 50%;
+  animation: flame 0.12s infinite;
+}
+@keyframes flame { from { transform: scaleY(1); } to { transform: scaleY(0.6); } }
+
+/* عداد دائري */
+.circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin: 10px auto;
+  background: conic-gradient(#00ff99 0deg, #003 0deg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.inner { width: 120px; height: 120px; border-radius: 50%; background: #000; display: flex; justify-content: center; align-items: center; font-size: 32px; color: #00ff99; }
+
+.timer { font-size: 14px; color: #ccc; margin-top:10px; }
+
+.btn {
+  margin-top: 15px;
+  padding: 12px 30px;
+  font-size: 16px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(45deg, #00ffcc, #0066ff);
+  cursor: pointer;
+  box-shadow: 0 0 15px #00f;
+}
+
+/* انفجار */
+.flash { animation: flash 0.3s; }
+@keyframes flash { from { background: white; } to { background: transparent; } }
+
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <div class="title">مرحبا بكم في عالم MAKOHAKR</div>
+
+  <!-- الطيارة -->
+  <div class="plane">
+    <div class="fire"></div>
+  </div>
+
+  <!-- عداد دائري -->
+  <div class="circle" id="circle">
+    <div class="inner" id="value">1.00x</div>
+  </div>
+
+  <div class="timer" id="timer">التحديث بعد 5 ثانية</div>
+  <button class="btn" id="toggle">▶️ تشغيل</button>
+</div>
+
+<!-- صوت -->
+<audio id="beep">
+  <source src="https://www.soundjay.com/buttons/sounds/button-09.mp3">
+</audio>
+
+<script>
+let value = 1.00;
+let timeLeft = 5;
+let running = false;
+let interval;
+
+const valueEl = document.getElementById("value");
+const timerEl = document.getElementById("timer");
+const btn = document.getElementById("toggle");
+const circle = document.getElementById("circle");
+const beep = document.getElementById("beep");
+const app = document.getElementById("app");
+
+/* نجوم */
+setInterval(() => {
+  const star = document.createElement("div");
+  star.className = "star";
+  star.style.left = Math.random() * 360 + "px";
+  star.style.animationDuration = (2 + Math.random() * 3) + "s";
+  app.appendChild(star);
+  setTimeout(()=>star.remove(),5000);
+},100);
+
+/* بدء العداد */
+function start() {
+  interval = setInterval(() => {
+    timeLeft--;
+    timerEl.innerText = "التحديث بعد " + timeLeft + " ثانية";
+
+    let progress = (5 - timeLeft)/5*360;
+    circle.style.background = `conic-gradient(#00ff99 ${progress}deg, #003 ${progress}deg)`;
+
+    if(timeLeft <= 0){
+      value = (Math.random()*5+1).toFixed(2);
+      valueEl.innerText = value + "x";
+      timeLeft = 5;
+      beep.play();
+      app.classList.add("flash");
+      setTimeout(()=>app.classList.remove("flash"),300);
+    }
+  },1000);
+}
+
+/* زر تشغيل/إيقاف */
+btn.onclick = () => {
+  if(!running){ start(); btn.innerText="⏸️ إيقاف"; running=true; }
+  else { clearInterval(interval); btn.innerText="▶️ تشغيل"; running=false; }
+};
+
+/* تغيير الثيم تلقائي */
+let theme = 1;
+setInterval(()=>{
+  document.body.className = `theme${theme}`;
+  theme++;
+  if(theme>3) theme=1;
+},15000);
+
+</script>
+
+</body>
+</html># Simple workflow for deploying static content to GitHub Pages
+name: Deploy static content to Pages
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Single deploy job since we're just deploying
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
